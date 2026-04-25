@@ -1,0 +1,149 @@
+*{
+transition:all 0.2s ease-in-out;
+box-sizing:border-box;
+}
+
+body{
+background:var(--bg);
+color:#fff;
+font-family:-apple-system,system-ui,sans-serif;
+padding:20px;
+margin:0;
+line-height:1.4;
+}
+
+.grid{
+display:grid;
+max-width:1400px;
+margin:auto;
+grid-template-columns:repeat(12,1fr);
+gap:12px;
+}
+
+.box{
+background:var(--card);
+border-radius:24px;
+padding:24px;
+border:1px solid rgba(255,255,255,0.1);
+}
+
+.hero{
+grid-column:span 9;
+border-color:var(--accent);
+background:radial-gradient(circle at top left,var(--accent_low),transparent);
+box-shadow:0 10px 30px rgba(0,0,0,0.5);
+position:relative;
+}
+
+h1{
+font-size:5rem;
+margin:0;
+letter-spacing:-4px;
+color:var(--accent);
+font-weight:800;
+text-shadow:0 0 20px var(--accent_glow);
+animation:fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn{
+from{opacity:0;transform:translateY(10px);}
+to{opacity:1;transform:translateY(0);}
+}
+
+label{
+font-size:0.65rem;
+color:var(--label);
+text-transform:uppercase;
+font-weight:800;
+display:block;
+margin-bottom:5px;
+}
+
+select,input{
+width:100%;
+background:#2c2c2e;
+border:1px solid transparent;
+border-radius:12px;
+padding:12px;
+color:#fff;
+margin-bottom:10px;
+font-size:0.95rem;
+}
+
+select:focus,input:focus{
+border-color:var(--accent);
+outline:none;
+background:#3a3a3c;
+}
+
+.btn{
+background:var(--accent);
+color:#fff;
+border:none;
+padding:20px;
+border-radius:40px;
+width:100%;
+font-weight:800;
+cursor:pointer;
+font-size:1.1rem;
+margin-top:10px;
+}
+
+.btn:hover{
+filter:brightness(1.2);
+transform:scale(1.02);
+}
+
+.section-title{
+color:var(--accent);
+border-bottom:1px solid rgba(255,255,255,0.1);
+margin:25px 0 10px 0;
+padding-bottom:8px;
+font-size:0.85rem;
+grid-column:span 12;
+text-transform:uppercase;
+letter-spacing:1px;
+font-weight:700;
+}
+
+.analysis-bar{
+display:flex;
+height:14px;
+border-radius:7px;
+overflow:hidden;
+margin-top:12px;
+background:#333;
+}
+
+.analysis-legend{
+display:flex;
+flex-wrap:wrap;
+gap:15px;
+margin-top:12px;
+font-size:10px;
+color:#8e8e93;
+}
+
+.badge{
+font-size:10px;
+font-weight:800;
+padding:3px 8px;
+border-radius:6px;
+display:inline-block;
+margin-top:5px;
+}
+
+.disclaimer-box{
+grid-column:span 12;
+background:rgba(255,255,255,0.03);
+border-radius:20px;
+padding:24px;
+border:1px dashed rgba(255,255,255,0.1);
+margin-top:20px;
+}
+
+@media(max-width:900px){
+.grid{display:flex;flex-direction:column;}
+.hero{order:-1;}
+h1{font-size:3.5rem;}
+}
