@@ -1,7 +1,7 @@
 <?php 
 /**
- * THERMAL CALCULATOR - RESULTS VIEW (V10.1)
- * Full Technical Report with Sensitivity Graph and Legal Disclaimer.
+ * THERMAL CALCULATOR - RESULTS VIEW (V10.2)
+ * Full Technical Report including ALL User Selections, Stress Test, and Graph.
  */
 
 if ($results && $results['btu'] > 0): 
@@ -71,9 +71,8 @@ if ($results && $results['btu'] > 0):
                 </div>
             </div>
             
-            <!-- UI DISCLAIMER -->
             <p style="font-size: 0.65rem; color: var(--label); margin-top: 25px; line-height: 1.4; max-width: 450px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-                <strong>ΝΟΜΙΚΗ ΣΗΜΕΙΩΣΗ:</strong> Οι υπολογισμοί αποτελούν τεχνική εκτίμηση και όχι επίσημη μελέτη. Η τελική επιλογή εξοπλισμού απαιτεί αυτοψία από εξειδικευμένο μηχανικό.
+                <strong>ΝΟΜΙΚΗ ΣΗΜΕΙΩΣΗ:</strong> Ο παρών υπολογισμός αποτελεί τεχνική εκτίμηση και όχι επίσημη μελέτη.
             </p>
 
             <button onclick="window.print()" class="btn" style="width: auto; padding: 12px 25px; font-size: 0.85rem; background: var(--accent); margin-top: 15px;">
@@ -81,21 +80,43 @@ if ($results && $results['btu'] > 0):
             </button>
         </div>
 
-        <!-- TECHNICAL REPORT TEXTAREA -->
-        <div class="box" style="background: rgba(0,0,0,0.4); padding: 20px; border-radius: 16px; width: 620px; border: 1px solid var(--accent_low); flex-shrink: 0;">
-            <label style="margin-bottom: 8px; color: #00ff41; font-weight: 800;">📋 ΤΕΧΝΙΚΗ ΕΚΘΕΣΗ & STRESS TEST</label>
-            <textarea readonly style="width: 100%; height: 500px; background: transparent; border: none; color: #00ff41; font-family: monospace; font-size: 0.75rem; resize: none; outline: none; line-height: 1.4;" onclick="this.select()"><?php
+        <!-- FULL TECHNICAL REPORT TEXTAREA -->
+        <div class="box" style="background: rgba(0,0,0,0.4); padding: 20px; border-radius: 16px; width: 650px; border: 1px solid var(--accent_low); flex-shrink: 0;">
+            <label style="margin-bottom: 8px; color: #00ff41; font-weight: 800;">📋 ΠΛΗΡΗΣ ΤΕΧΝΙΚΗ ΕΚΘΕΣΗ</label>
+            <textarea readonly style="width: 100%; height: 600px; background: transparent; border: none; color: #00ff41; font-family: monospace; font-size: 0.72rem; resize: none; outline: none; line-height: 1.3;" onclick="this.select()"><?php
                 echo "=== ΑΝΑΛΥΣΗ ΥΠΟΛΟΓΙΣΜΟΥ ΘΕΡΜΙΚΩΝ ΦΟΡΤΙΩΝ ===\n";
                 echo "Ημερομηνία: " . date('d/m/Y H:i') . "\n";
-                echo "Κατάσταση:   " . ($isCooling ? "ΨΥΞΗ" : "ΘΕΡΜΑΝΣΗ") . "\n";
+                echo "Κατάσταση:   " . ($isCooling ? "ΨΥΞΗ" : "ΘΕΡΜΑΝΣΗ") . " | Ζώνη " . strtoupper($inputs['zone'] ?? 'B') . "\n";
                 echo "Tout: " . $final_tout . " °C | Tin: " . $tin . " °C | ACH: " . number_format($ach, 1) . "\n";
                 echo "--------------------------------------------------\n";
                 
-                echo "ΕΛΕΓΧΟΣ ΚΕΛΥΦΟΥΣ (U-Values):\n";
-                $u_w = $results['wall_u_values']['north'] ?? 0;
-                echo "- Τοιχοποιία (Β): U=" . number_format($u_w, 2) . " (Όριο: " . $limits['wall'] . ")\n";
-                if ($results['u_roof_final'] > 0) {
-                    echo "- Οροφή:         U=" . number_format($results['u_roof_final'], 2) . " (Όριο: " . $limits['roof'] . ")\n";
+                echo "ΔΕΔΟΜΕΝΑ ΧΩΡΟΥ & ΚΑΝΟΝΙΣΜΟΥ:\n";
+                echo "- Κανονισμός: " . ($GLOBALS['CONSTANTS']['ETOS_LABELS'][$inputs['etos'] ?? 'legacy']) . "\n";
+                echo "- Γεωμετρία:  " . ($inputs['area'] ?? 0) . " m2 x " . ($inputs['height'] ?? 0) . " m\n";
+                
+                echo "\nΑΝΑΛΥΣΗ ΚΕΛΥΦΟΥΣ (U-Values):\n";
+                if (($inputs['roof_type'] ?? '') !== 'heated_above') {
+                    $u_r = $results['u_roof_final'];
+                    $color_label = $GLOBALS['CONSTANTS']['ROOF_COLORS'][$inputs['roof_color'] ?? 'medium']['label'];
+                    echo "- Οροφή: U=" . number_format($u_r, 2) . " [Limit: " . $limits['roof'] . "]\n";
+                    echo "  Τύπος: " . ($inputs['roof_type'] == 'terrace' ? 'Δώμα' : 'Στέγη') . " | Χρώμα: " . $color_label . "\n";
+                    if ($inputs['roof_ins'] !== 'none') echo "  Μόνωση: " . $GLOBALS['CONSTANTS']['LAMBDA'][$inputs['roof_ins']]['label'] . " (" . $inputs['roof_ins_depth'] . "cm)\n";
+                }
+
+                echo "\nΑΝΑΛΥΣΗ ΑΝΑ ΠΡΟΣΑΝΑΤΟΛΙΣΜΟ:\n";
+                foreach(['north'=>'ΒΟΡΡΑΣ', 'south'=>'ΝΟΤΟΣ', 'east'=>'ΑΝΑΤΟΛΗ', 'west'=>'ΔΥΣΗ'] as $id => $label) {
+                    $len = $results['is_auto_square'] ? round($results['side_length'], 1) : ($inputs["w_len_$id"] ?? 0);
+                    if ($len > 0) {
+                        $u_val = $results['wall_u_values'][$id] ?? 0;
+                        echo "- $label: L=$len m | U=" . number_format($u_val, 2) . " | " . ($inputs["w_type_$id"] == 'internal' ? 'ΕΣΩΤ.' : 'ΕΞΩΤ.') . "\n";
+                        
+                        $mat = $inputs["ins_mat_$id"] ?? 'none';
+                        if ($mat !== 'none') echo "  Επιπλ. Μόνωση: " . $GLOBALS['CONSTANTS']['LAMBDA'][$mat]['label'] . " (" . ($inputs["ins_depth_$id"] ?? 0) . "cm)\n";
+                        
+                        if ($inputs["win_std_$id"] > 0 || $inputs["win_patio_$id"] > 0) {
+                            echo "  Κούφωμα: " . $GLOBALS['CONSTANTS']['KOUFOMATA'][$inputs["frame_$id"] ?? 'alum']['label'] . " / " . $GLOBALS['CONSTANTS']['TZAMI'][$inputs["glass_$id"] ?? 'double']['label'] . "\n";
+                        }
+                    }
                 }
 
                 echo "\n=== STRESS TEST (BTU STRETCHING) ===\n";
@@ -107,9 +128,8 @@ if ($results && $results['btu'] > 0):
                 echo str_pad($isCooling ? "Καύσωνας" : "Παγετός", 12) . " | " . ($final_tout + ($isCooling ? 7 : -7)) . "°C  | " . str_pad(number_format($e_btu,0), 10) . "  | +" . round((($e_btu/$s_btu)-1)*100) . "%\n";
                 
                 echo "--------------------------------------------------\n";
-                echo "ΠΡΟΣΟΧΗ: Ο υπολογισμός αποτελεί τεχνική εκτίμηση.\n";
-                echo "Δεν υποκαθιστά επίσημη μελέτη ή ΠΕΑ.\n";
-                echo "Απαιτείται αυτοψία για την τελική επιλογή.\n";
+                echo "ΤΕΛΙΚΗ ΙΣΧΥΣ ΣΧΕΔΙΑΣΜΟΥ: " . number_format($results['btu'], 0) . " BTU/h (" . number_format($results['kw'], 2) . " kW)\n";
+                echo "ΠΡΩΤΟΓΕΝΗΣ ΕΝΕΡΓΕΙΑ:    " . number_format($results['pe_estimate'], 1) . " kWh/m2/y\n";
                 echo "==================================================";
             ?></textarea>
         </div>
