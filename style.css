@@ -1,0 +1,140 @@
+:root {
+    --bg: #1c1c1e;
+    --card: #2c2c2e;
+    --accent: #0a84ff; /* Fallback */
+    --accent_low: rgba(10, 132, 255, 0.2);
+    --label: #8e8e93;
+}
+
+* {
+    transition: all 0.2s ease-in-out;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--bg);
+    color: #fff;
+    font-family: -apple-system, system-ui, sans-serif;
+    padding: 20px;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.grid {
+    display: grid;
+    max-width: 1400px;
+    margin: auto;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 12px;
+}
+
+.box {
+    background: var(--card);
+    border-radius: 24px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Results Hero Section */
+.hero {
+    grid-column: span 12;
+    border-width: 2px;
+    background: radial-gradient(circle at top left, var(--accent_low), transparent);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+h1 {
+    font-size: 4.5rem;
+    margin: 10px 0;
+    letter-spacing: -3px;
+    font-weight: 800;
+}
+
+label {
+    font-size: 0.65rem;
+    color: var(--label);
+    text-transform: uppercase;
+    font-weight: 800;
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Form Elements */
+select, input {
+    width: 100%;
+    background: #1c1c1e;
+    border: 1px solid #3a3a3c;
+    border-radius: 12px;
+    padding: 12px;
+    color: #fff;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+select:focus, input:focus {
+    border-color: var(--accent);
+}
+
+.section-title {
+    color: var(--accent);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 5px 0 15px 0;
+    padding-bottom: 8px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 800;
+}
+
+/* Action Button */
+.btn {
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    width: 100%;
+    font-weight: 900;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Analysis Visualization Bar */
+.analysis-bar {
+    display: flex;
+    height: 16px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #111;
+}
+
+/* --- PRINT / PDF RULES --- */
+@media print {
+    body { background: white; color: black; padding: 0; }
+    .grid { display: block; }
+    .hero { 
+        border: 2px solid black !important; 
+        background: white !important; 
+        box-shadow: none !important; 
+        border-radius: 0; 
+        padding: 40px;
+    }
+    h1 { font-size: 3rem; color: black !important; letter-spacing: -1px; }
+    textarea { 
+        border: 1px solid #eee !important; 
+        color: black !important; 
+        height: 600px !important; /* Allow the report to expand */
+        font-size: 11pt !important;
+        overflow: visible !important;
+    }
+    /* Hide everything except the Hero/Report section */
+    form, .btn, .analysis-bar, select, input { display: none !important; }
+}
+
+/* Responsive */
+@media(max-width: 1100px) {
+    .grid { display: flex; flex-direction: column; }
+    h1 { font-size: 3rem; }
+    .hero div { flex-direction: column; }
+    .hero .box { width: 100% !important; margin-top: 20px; }
+}
