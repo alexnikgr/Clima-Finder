@@ -1,12 +1,13 @@
 <?php
 /**
- * config/physics.php
- * Global energy factors, soil properties, and climate-specific profiles.
+ * config/physics.php (V23.5)
+ * Updated with Adjacent Factors (b-factors) for professional environment audits.
  */
  if (!defined('APP_RUNNING')) {
     header("HTTP/1.1 403 Forbidden");
     exit("Direct access denied.");
 }
+
 return [
     'PRIMARY_ENERGY_FACTORS' => [
         'electricity' => 2.90,
@@ -22,7 +23,14 @@ return [
         'p_atm' => 101325, 
         'h_fg'  => 2450000,
         'soil_lambda' => 2.0,
-        'w_thick_default' => 0.30 // Default Πάχος Τοιχοποιίας (m)
+        'w_thick_default' => 0.30 
+    ],
+    // NEW: Adjacent Space b-factors
+    'ADJACENT_FACTORS' => [
+        'external'   => ['label' => 'ΕΞΩΤΕΡΙΚΟΣ (ΑΕΡΑΣ)', 'f' => 1.0],
+        'unheated'   => ['label' => 'ΜΗ ΘΕΡΜΑΙΝΟΜΕΝΟΣ (ΜΘΧ)', 'f' => 0.7],
+        'semiheated' => ['label' => 'ΗΜΙΘΕΡΜΑΙΝΟΜΕΝΟΣ', 'f' => 0.4],
+        'heated'     => ['label' => 'ΘΕΡΜΑΙΝΟΜΕΝΟΣ (ΓΕΙΤΟΝΑΣ)', 'f' => 0.0] 
     ],
     'CLIMATE_FACTORS' => [
         'a' => ['rh' => 60, 'wind' => 4.2, 'solar_gain' => 1.8, 'desc' => 'Θερμό/Παραθαλάσσιο'],

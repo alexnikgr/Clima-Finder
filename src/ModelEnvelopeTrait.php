@@ -2,8 +2,8 @@
 if (!defined('APP_RUNNING')) die('Direct access denied.');
 
 /**
- * src/ModelEnvelopeTrait.php
- * Διαχείριση Τοιχοποιίας: Υπολογισμός βάσει Τύπου (Μονός/Διπλός) & Σκίαση.
+ * src/ModelEnvelopeTrait.php (V23.5)
+ * Logic: Dynamic Temperature Adjustment (b-factors) & Hybrid Openings.
  */
 trait ModelEnvelopeTrait {
     private function processEnvelope($p, $mode, $dt, $etos, $area, $height) {
@@ -16,19 +16,27 @@ trait ModelEnvelopeTrait {
             if ($len <= 0) continue;
             $total_p += $len;
 
-            // --- ΝΕΟ LOGIC: Υπολογισμός U βάσει Τύπου Κατασκευής ---
+            // 1. U-Value & Corrected Lag
             $build_type = $p["w_build_$dir"] ?? 'double';
             $baseU = $this->c['U_WALL_TYPES'][$build_type]['u'] ?? 1.80;
-            
             $u_w = $this->getU($baseU, $p["ins_mat_$dir"] ?? 'none', floatval($p["ins_depth_$dir"] ?? 0), $etos);
             $wall_u[$dir] = $u_w;
             $wall_lags[$dir] = $this->calculateTimeLag($p, $dir, $etos);
 
-            // Έλεγχος Εσωτερικού/Εξωτερικού (w_env)
-            $is_internal = (($p["w_env_$dir"] ?? 'external') === 'internal');
-            $adj_dt = $is_internal ? ($dt * 0.6) : $dt;
+            // 2. DYNAMIC ADJACENT LOSS LOGIC (The b-factor fix)
+            $env_type = $p["w_env_$dir"] ?? 'external';
+            $f_adj = $this->c['ADJACENT_FACTORS'][$env_type]['f'] ?? 1.0;
+            $adj_dt = $dt * $f_adj;
 
-            $awin = (floatval($p["win_std_$dir"] ?? 0) * 1.2) + (floatval($p["win_patio_$dir"] ?? 0) * 2.4);
+            // 3. HYBRID OPENING LOGIC
+            $is_custom = (($p["win_custom_$dir"] ?? 'no') === 'yes');
+            if ($is_custom) {
+                $awin = floatval($p["win_std_$dir"] ?? 0) + floatval($p["win_patio_$dir"] ?? 0);
+            } else {
+                $awin = (intval($p["win_std_$dir"] ?? 0) * 1.56) + (intval($p["win_patio_$dir"] ?? 0) * 3.08);
+            }
+
+            // 4. THERMAL CONDUCTANCE (If adj_dt is 0, this wall correctly adds 0 load)
             $tc += (max(($len * $height) - $awin, 0) * $u_w * $adj_dt);
 
             if ($awin > 0) {

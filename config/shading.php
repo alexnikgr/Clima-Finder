@@ -10,6 +10,7 @@
 return [
     'SHADING_OPTIONS' => [
         'none'        => ['label' => 'Χωρίς σκίαση', 'factor' => 1.0],
+         'neighbor'    => ['label' => 'Σκιασμένο από γειτονικά', 'factor' => 0.30], // Μόνιμη σκιά
         'shutter'     => ['label' => 'Εξωτερικό Ρολό', 'factor' => 0.15],
         'blinds'      => ['label' => 'Εσωτ. στόρια', 'factor' => 0.50],
         'awning'      => ['label' => 'Εξωτ. τέντα', 'factor' => 0.25],
@@ -20,6 +21,7 @@ return [
         'trees_dec'   => ['label' => 'Φυλλοβόλα Δέντρα', 'factor' => 0.40],
         'trees_evg'   => ['label' => 'Αειθαλή Δέντρα', 'factor' => 0.50]
     ],
+    
     'ROOF_COLORS' => [
         'cool_white' => ['label' => 'Λευκό / Ανακλαστικό', 'alpha' => 0.30],
         'light'      => ['label' => 'Ανοιχτό (Μπεζ)', 'alpha' => 0.45],

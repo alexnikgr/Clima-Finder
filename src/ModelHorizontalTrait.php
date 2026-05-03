@@ -2,30 +2,32 @@
 if (!defined('APP_RUNNING')) die('Direct access denied.');
 
 /**
- * src/ModelHorizontalTrait.php (V20.0)
- * Physics: ISO 13370 Ground Coupling & Solar-Infused Roof Loads.
+ * src/ModelHorizontalTrait.php (V21.0)
+ * Refined Roof Physics: Differentiates between exposed and shielded horizontal elements.
  */
 trait ModelHorizontalTrait {
 
     /**
-     * Calculates the specialized load for the roof, 
-     * accounting for extreme solar radiation on terraces.
+     * Calculates roof load with specific Sol-Air logic for different configurations.
      */
     private function calculateRoofLoad($p, $area, $u_r, $dt, $mode) {
         if ($u_r <= 0) return 0;
 
         $solar_impact = 1.0;
         if ($mode === 'cooling') {
-            // Get solar absorptivity (alpha) from roof color
-            $color_id = $p['roof_color'] ?? 'medium';
-            $alpha = $this->c['ROOF_COLORS'][$color_id]['alpha'] ?? 0.65;
+            $type = $p['roof_type'] ?? 'terrace';
+            $alpha = $this->c['ROOF_COLORS'][$p['roof_color'] ?? 'medium']['alpha'] ?? 0.65;
             
-            /**
-             * Sol-Air Correction: 
-             * Uninsulated roofs can reach 65°C in Greece.
-             * We multiply the DT effect to simulate this solar "pressure".
-             */
-            $solar_impact = 1 + ($alpha * 2.8); 
+            if ($type === 'terrace') {
+                // Fully exposed slab: High Sol-Air intensity
+                $solar_impact = 1 + ($alpha * 2.8); 
+            } elseif ($type === 'slab_under') {
+                // Slab under roof: Shielded from direct radiation, limited air heat gain
+                $solar_impact = 1 + ($alpha * 0.45); 
+            } else {
+                // Standard Pitched Roof (Ceramic tiles/Standard)
+                $solar_impact = 1 + ($alpha * 1.4); 
+            }
         }
 
         return $area * $u_r * $dt * $solar_impact;
@@ -52,8 +54,6 @@ trait ModelHorizontalTrait {
             }
             $dt_eff = 0.3 + 2.0 * (0.17 + $rins);
             $u = ($dt_eff < $bp) ? (4 / (pi() * $bp + $dt_eff)) * log(pi() * $bp / $dt_eff + 1) : 2.0 / (0.457 * $bp + $dt_eff);
-            
-            // 0.7 factor for soil temperature stability
             return ['q' => $area * $u * ($dt * 0.7), 'u' => $u, 'b_prime' => $bp];
         }
 

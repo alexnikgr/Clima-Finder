@@ -1,23 +1,25 @@
 :root {
     --bg: #1c1c1e;
     --card: #2c2c2e;
-    --accent: #0a84ff; /* Fallback */
+    --accent: #0a84ff; /* Dynamically updated by PHP layout */
     --accent_low: rgba(10, 132, 255, 0.2);
     --label: #8e8e93;
+    --border: #3a3a3c;
 }
 
 * {
-    transition: all 0.2s ease-in-out;
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
     box-sizing: border-box;
 }
 
 body {
     background: var(--bg);
     color: #fff;
-    font-family: -apple-system, system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
     padding: 20px;
     margin: 0;
     line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
 }
 
 .grid {
@@ -35,12 +37,12 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Results Hero Section */
 .hero {
     grid-column: span 12;
     border-width: 2px;
     background: radial-gradient(circle at top left, var(--accent_low), transparent);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    border-color: var(--accent_low);
 }
 
 h1 {
@@ -59,21 +61,41 @@ label {
     margin-bottom: 5px;
 }
 
-/* Form Elements */
+/* --- FORM ELEMENTS FIX --- */
 select, input {
     width: 100%;
     background: #1c1c1e;
-    border: 1px solid #3a3a3c;
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 12px;
     color: #fff;
     margin-bottom: 10px;
     font-size: 0.9rem;
     outline: none;
+    appearance: none; /* Removes native OS styling */
+    -webkit-appearance: none;
+}
+
+/* Custom Arrow for all Selects */
+select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://w3.org' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 35px !important;
+}
+
+/* Fix for heights < 40px */
+select[style*="height"] {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 1 !important;
+    background-position: right 8px center;
+    background-size: 12px;
 }
 
 select:focus, input:focus {
     border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent_low);
 }
 
 .section-title {
@@ -87,7 +109,6 @@ select:focus, input:focus {
     font-weight: 800;
 }
 
-/* Action Button */
 .btn {
     color: #fff;
     border: none;
@@ -97,36 +118,41 @@ select:focus, input:focus {
     cursor: pointer;
     text-transform: uppercase;
     letter-spacing: 1px;
+    transition: transform 0.1s, filter 0.2s;
 }
 
-/* Analysis Visualization Bar */
-.analysis-bar {
-    display: flex;
-    height: 16px;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #111;
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn:hover {
+    filter: brightness(1.1);
 }
 
 /* --- PRINT / PDF RULES --- */
 @media print {
+    @page { margin: 1cm; }
     body { background: white !important; color: black !important; padding: 0; }
     .grid { display: block !important; }
-    form, .btn, .section-title { display: none !important; } /* Hide interactive form */
-    .box { border: 1px solid #eee !important; background: white !important; padding: 20px !important; margin-bottom: 20px; }
-    h1 { color: black !important; }
+    form, .btn, .section-title, .box[style*="grid-column: span 4"] { display: none !important; } 
+    .box { border: 1px solid #ddd !important; background: white !important; color: black !important; padding: 20px !important; margin-bottom: 20px; box-shadow: none !important; }
+    h1, label, div { color: black !important; }
     textarea { 
-        border: 1px solid #ddd !important; 
-        color: black !important; 
-        height: 600px !important; 
-        overflow: visible !important;
+        border: 1px solid #000 !important; 
+        color: #000 !important; 
+        height: auto !important; 
+        min-height: 800px;
+        width: 100% !important;
+        background: white !important;
     }
+    svg polyline { stroke: black !important; }
+    svg circle { fill: black !important; }
 }
 
 /* Responsive */
 @media(max-width: 1100px) {
     .grid { display: flex; flex-direction: column; }
     h1 { font-size: 3rem; }
-    .hero div { flex-direction: column; }
+    .hero > div { flex-direction: column !important; }
     .hero .box { width: 100% !important; margin-top: 20px; }
 }
