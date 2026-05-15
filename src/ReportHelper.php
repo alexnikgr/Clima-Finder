@@ -1,6 +1,6 @@
 <?php
 /**
- * src/ReportHelper.php (V28.0)
+ * src/ReportHelper.php (V28.0 - Refactored)
  * Logic: Generates a full technical audit log with actual temperature scenarios.
  */
 class ReportHelper {
@@ -29,7 +29,7 @@ class ReportHelper {
         $out .= "------------------------------------------------------------\n";
         $out .= "► Κατάσταση:    " . ($isCool ? "ΨΥΞΗ (Cooling)" : "ΘΕΡΜΑΝΣΗ (Heating)") . "\n";
         $out .= "► Ζώνη:         " . ($c['CLIMATE_ZONES'][$zone]['label'] ?? strtoupper($zone)) . "\n";
-        $out .= "► Παλαιότητα:   " . ($c['ETOS_LABELS'][$inputs['etos'] ?? 'legacy']) . "\n";
+        $out .= "► Παλαιότητα:   " . ($c['ETOS_LABELS'][$inputs['etos'] ?? 'legacy'] ?? 'Άγνωστο') . "\n";
         $out .= "► Τ-Εσωτερική:  " . number_format($tin, 1) . " °C (Setpoint)\n";
         $out .= "► Τ-Εξωτερική:  " . number_format($tout, 1) . " °C (Base Design)\n";
         $out .= "► Delta T:      " . number_format($dt, 1) . " K\n\n";
@@ -42,7 +42,7 @@ class ReportHelper {
         
         $roof_label = $inputs['roof_type'] ?? 'terrace';
         $out .= "► Τύπος Οροφής: " . $roof_label . " (U_fin: " . number_format($results['u_roof_final'] ?? 0, 3) . ")\n";
-        $out .= "  • Χρώμα (a):  " . ($c['ROOF_COLORS'][$inputs['roof_color'] ?? 'medium']['label']) . "\n";
+        $out .= "  • Χρώμα (a):  " . ($c['ROOF_COLORS'][$inputs['roof_color'] ?? 'medium']['label'] ?? 'Μεσαίο') . "\n";
         
         $floor_label = $inputs['floor_type'] ?? 'ground';
         $out .= "► Τύπος Δαπέδου:" . $floor_label . " (U_fin: " . number_format($results['u_floor_final'] ?? 0, 3) . ")\n";
@@ -54,15 +54,16 @@ class ReportHelper {
         $out .= " 3. ΑΝΑΛΥΣΗ ΚΕΛΥΦΟΥΣ (ENVELOPE BREAKDOWN)\n";
         $out .= "------------------------------------------------------------\n";
         foreach(['north'=>'ΒΟΡΡΑΣ', 'south'=>'ΝΟΤΟΣ', 'east'=>'ΑΝΑΤΟΛΗ', 'west'=>'ΔΥΣΗ'] as $id => $label) {
-            $len = ($results['is_auto_square'] ?? false) ? $results['side_length'] : floatval($inputs["w_len_$id"] ?? 0);
+            // Corrected key alignment to match updated trait tracking outputs
+            $len = ($results['is_auto_square'] ?? false) ? ($results['side_length'] ?? 0) : floatval($inputs["w_len_$id"] ?? 0);
             if ($len > 0) {
                 $is_c = (($inputs["win_custom_$id"] ?? 'no') === 'yes');
                 $out .= "► " . str_pad($label, 10) . " | L: " . number_format($len, 1) . "m\n";
-                $out .= "  • Κατασκευή: " . ($c['U_WALL_TYPES'][$inputs["w_build_$id"] ?? 'double']['label']) . "\n";
-                $out .= "  • U-Value:   " . number_format($results['wall_u_values'][$id], 3) . " W/m²K | Lag: " . ($results['wall_lags'][$id] ?? 0) . "h\n";
-                $out .= "  • Επαφή:     " . ($c['ADJACENT_FACTORS'][$inputs["w_env_$id"] ?? 'external']['label']) . "\n";
-                $out .= "  • Σκίαση:    " . ($c['SHADING_OPTIONS'][$inputs["shading_$id"] ?? 'none']['label']) . "\n";
-                $out .= "  • Ανοίγματα: " . ($is_c ? "CUSTOM m²" : "STANDARD TEM") . " | Frame: " . ($c['KOUFOMATA'][$inputs["frame_$id"] ?? 'alum']['label']) . "\n";
+                $out .= "  • Κατασκευή: " . ($c['U_WALL_TYPES'][$inputs["w_build_$id"] ?? 'double']['label'] ?? 'Διπλός') . "\n";
+                $out .= "  • U-Value:   " . number_format($results['wall_u_values'][$id] ?? 0.0, 3) . " W/m²K | Lag: " . ($results['wall_lags'][$id] ?? 0) . "h\n";
+                $out .= "  • Επαφή:     " . ($c['ADJACENT_FACTORS'][$inputs["w_env_$id"] ?? 'external']['label'] ?? 'Εξωτερικός Αέρας') . "\n";
+                $out .= "  • Σκίαση:    " . ($c['SHADING_OPTIONS'][$inputs["shading_$id"] ?? 'none']['label'] ?? 'Χωρίς Σκίαση') . "\n";
+                $out .= "  • Ανοίγματα: " . ($is_c ? "CUSTOM m²" : "STANDARD TEM") . " | Frame: " . ($c['KOUFOMATA'][$inputs["frame_$id"] ?? 'alum']['label'] ?? 'Αλουμίνιο') . "\n";
                 $out .= "  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n";
             }
         }
