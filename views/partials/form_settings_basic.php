@@ -1,6 +1,6 @@
 <?php
 /**
- * views/partials/form_settings_basic.php (V27.0)
+ * views/partials/form_settings_basic.php (V28.0 - Refactored)
  * Basic parameters: Mode, Climate Zone, Building Era, and Geometry.
  */
  if (!defined('APP_RUNNING')) {
@@ -21,16 +21,16 @@
     <!-- Climate Zone (Location) -->
     <label>Κλιματική Ζώνη (Τοποθεσία)</label>
     <select name="zone" onchange="this.form.submit()">
-        <?php foreach($GLOBALS['CONSTANTS']['CLIMATE_ZONES'] as $id => $z): ?>
-            <option value="<?= $id ?>" <?= (($inputs['zone'] ?? 'b') == $id) ? 'selected' : '' ?>><?= $z['label'] ?></option>
+        <?php foreach($this->c['CLIMATE_ZONES'] as $id => $z): ?>
+            <option value="<?= $id ?>" <?= (($inputs['zone'] ?? 'b') == $id) ? 'selected' : '' ?>><?= htmlspecialchars($z['label']) ?></option>
         <?php endforeach; ?>
     </select>
 
     <!-- Building Era (KENAK Category) -->
     <label>Κέλυφος (Παλαιότητα Κτιρίου)</label>
     <select name="etos" onchange="this.form.submit()">
-        <?php foreach($GLOBALS['CONSTANTS']['ETOS_LABELS'] as $id => $label): ?>
-            <option value="<?= $id ?>" <?= (($inputs['etos'] ?? 'legacy') == $id) ? 'selected' : '' ?>><?= $label ?></option>
+        <?php foreach($this->c['ETOS_LABELS'] as $id => $label): ?>
+            <option value="<?= $id ?>" <?= (($inputs['etos'] ?? 'legacy') == $id) ? 'selected' : '' ?>><?= htmlspecialchars($label) ?></option>
         <?php endforeach; ?>
     </select>
 
@@ -41,19 +41,17 @@
             <input type="number" 
                    name="area" 
                    step="0.1" 
-                   value="<?= $inputs['area'] ?? '' ?>" 
+                   value="<?= htmlspecialchars($inputs['area'] ?? '') ?>" 
                    required 
-                   placeholder="0.0"
-                   onchange="this.form.submit()">
+                   placeholder="0.0"> <!-- Instant submit removed to secure fluid keyboard input loops -->
         </div>
         <div>
             <label>Καθαρό Ύψος m</label>
             <input type="number" 
                    name="height" 
                    step="0.1" 
-                   value="<?= $inputs['height'] ?? '3.0' ?>" 
-                   placeholder="3.0"
-                   onchange="this.form.submit()">
+                   value="<?= htmlspecialchars($inputs['height'] ?? '3.0') ?>" 
+                   placeholder="3.0">
         </div>
     </div>
     
