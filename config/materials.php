@@ -1,6 +1,6 @@
 <?php
 /**
- * config/materials.php
+ * config/materials.php (V28.0 - Refactored)
  * Physical properties, U-values, and thermal constants.
  */
  if (!defined('APP_RUNNING')) {
@@ -19,20 +19,20 @@ return [
         'terrace'      => ['legacy' => 3.10, 'medium' => 1.10, 'new' => 0.40],
         'pitched'      => ['legacy' => 2.50, 'medium' => 0.90, 'new' => 0.35],
         'slab_under'   => ['legacy' => 2.10, 'medium' => 0.85, 'new' => 0.32],
-        'heated_above' => ['legacy' => 0.0, 'medium' => 0.0, 'new' => 0.0]
+        'heated_above' => ['legacy' => 0.0,  'medium' => 0.0,  'new' => 0.0]
     ],
 
     'LAMBDA' => [
-        'none'     => ['label' => 'Χωρίς μόνωση', 'lambda' => 0],
+        'none'     => ['label' => 'Χωρίς μόνωση', 'lambda' => 9999], // Set high to prevent division-by-zero errors
         'xps'      => ['label' => 'XPS (εξηλασμένη)', 'lambda' => 0.035],
         'eps'      => ['label' => 'EPS (διογκωμένη)', 'lambda' => 0.038],
         'rockwool' => ['label' => 'Πετροβάμβακας', 'lambda' => 0.040]
     ],
 
     'U_FLOOR_BASE' => [
-        'ground'       => 0.80,
-        'pilotis'      => 1.50,
-        'heated_below' => 0.0
+        'ground'       => ['legacy' => 1.20, 'medium' => 0.80, 'new' => 0.35], // Era differentiated ground floors
+        'pilotis'      => ['legacy' => 2.40, 'medium' => 1.20, 'new' => 0.40], // Pilotis without insulation is a heavy loss point
+        'heated_below' => ['legacy' => 0.0,  'medium' => 0.0,  'new' => 0.0]
     ],
 
     'KOUFOMATA' => [
