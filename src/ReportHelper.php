@@ -21,7 +21,7 @@ class ReportHelper {
 
         // 2. Build the Report String
         $out = "============================================================\n";
-        $out .= "   THERMAL PRO V28.0 - FULL ENGINEERING AUDIT LOG\n";
+        $out .= "   ClimaFinder v0.7 - FULL ENGINEERING AUDIT LOG\n";
         $out .= "============================================================\n";
         $out .= "DATE: " . date('d/m/Y H:i') . " | ID: " . strtoupper(uniqid()) . "\n\n";
 
