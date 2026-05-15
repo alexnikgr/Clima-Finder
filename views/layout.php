@@ -60,7 +60,7 @@ $themeLow   = $isCooling ? 'rgba(10, 132, 255, 0.15)' : 'rgba(255, 149, 0, 0.15)
     <footer style="max-width: 1400px; margin: 40px auto 20px; padding: 0 12px;">
         <?php include 'views/partials/legal_disclaimer.php'; ?>
         <p style="text-align: center; font-size: 0.6rem; color: var(--label); margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;">
-            Physics Engine V27.0 • Refactored for M2 & State Precision
+            ClimaFinder v0.7
         </p>
     </footer>
 
