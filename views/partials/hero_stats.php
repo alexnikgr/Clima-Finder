@@ -1,6 +1,6 @@
 <?php
 /**
- * views/partials/hero_stats.php (V22.0)
+ * views/partials/hero_stats.php (V27.0)
  * Logic: Primary result display and auto-geometry notification.
  */
  if (!defined('APP_RUNNING')) {

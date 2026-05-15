@@ -7,10 +7,11 @@
     header("HTTP/1.1 403 Forbidden");
     exit("Direct access denied.");
 }
+
 return [
     'SHADING_OPTIONS' => [
         'none'        => ['label' => 'Χωρίς σκίαση', 'factor' => 1.0],
-         'neighbor'    => ['label' => 'Σκιασμένο από γειτονικά', 'factor' => 0.30], // Μόνιμη σκιά
+        'neighbor'    => ['label' => 'Σκιασμένο από γειτονικά', 'factor' => 0.30], 
         'shutter'     => ['label' => 'Εξωτερικό Ρολό', 'factor' => 0.15],
         'blinds'      => ['label' => 'Εσωτ. στόρια', 'factor' => 0.50],
         'awning'      => ['label' => 'Εξωτ. τέντα', 'factor' => 0.25],

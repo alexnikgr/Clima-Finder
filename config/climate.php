@@ -1,12 +1,13 @@
 <?php
 /**
  * config/climate.php
- * Design temperatures and climate zone parameters.
+ * Design temperatures and climate zone parameters for Greece.
  */
  if (!defined('APP_RUNNING')) {
     header("HTTP/1.1 403 Forbidden");
     exit("Direct access denied.");
 }
+
 return [
     'CLIMATE_ZONES' => [
         'a' => ['label' => 'Ζώνη Α (Ηράκλειο/Νότια Ελλάδα)'],
@@ -14,12 +15,18 @@ return [
         'c' => ['label' => 'Ζώνη Γ (Θεσσαλονίκη/Βόρεια Ελλάδα)'],
         'd' => ['label' => 'Ζώνη Δ (Φλώρινα/Ορεινά)']
     ],
+    
+    // Design Outdoor Dry Bulb Temperatures (Tdb) per Zone
+    // Source: TEE-KENAK Technical Guidelines
     'DESIGN_CONDITIONS' => [
         'a' => ['cooling' => ['tdb' => 33], 'heating' => ['tdb' => 5]],
         'b' => ['cooling' => ['tdb' => 36], 'heating' => ['tdb' => 0]],
         'c' => ['cooling' => ['tdb' => 34], 'heating' => ['tdb' => -3]],
         'd' => ['cooling' => ['tdb' => 31], 'heating' => ['tdb' => -8]]
     ],
+    
+    // Default Internal Setpoints (T-in) 
+    // Cooling: 26°C for energy saving | Heating: 20°C for comfort
     'T_IN_DEFAULT' => [
         'cooling' => 26, 
         'heating' => 20

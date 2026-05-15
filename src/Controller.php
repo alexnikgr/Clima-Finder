@@ -28,7 +28,6 @@ class Controller {
             }
             
             // 3. STRICT VALIDATION
-            // Ensure mandatory numeric inputs exist to prevent model warnings
             $area = floatval($inputs['area'] ?? 0);
             $height = floatval($inputs['height'] ?? 0);
 
@@ -39,9 +38,10 @@ class Controller {
                 $results = $model->calculate($inputs);
                 
                 // 4. SCENARIO RUNNER (Sensitivity Analysis)
+                // These results are used by the SVG Graph and the Expanded Report
                 $mode = $inputs['mode'] ?? 'cooling';
                 $std_tout = !empty($inputs['custom_tout']) ? floatval($inputs['custom_tout']) 
-                    : $this->c['DESIGN_CONDITIONS'][$inputs['zone'] ?? 'b'][$mode]['tdb'];
+                    : ($this->c['DESIGN_CONDITIONS'][$inputs['zone'] ?? 'b'][$mode]['tdb'] ?? 35);
 
                 // Extreme Scenario (+7/-7 degrees)
                 $results['extreme'] = $model->calculate(array_merge($inputs, [
@@ -52,9 +52,6 @@ class Controller {
                 $results['mild'] = $model->calculate(array_merge($inputs, [
                     'custom_tout' => $std_tout + ($mode === 'cooling' ? -5 : 5)
                 ]));
-            } else {
-                // If validation fails, $results remains null so the dashboard stays hidden
-                $results = null;
             }
         }
 

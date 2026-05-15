@@ -1,10 +1,10 @@
 <?php
+/**
+ * src/ThermalModel.php (V27.0)
+ * Core Orchestrator: Combines traits and prepares data for expanded reporting.
+ */
 if (!defined('APP_RUNNING')) die('Direct access denied.');
 
-/**
- * src/ThermalModel.php (V22.0)
- * Core Orchestrator: Combines traits and applies final safety factors.
- */
 require_once 'ModelPhysicsTrait.php';
 require_once 'ModelEnvelopeTrait.php';
 require_once 'ModelHorizontalTrait.php';
@@ -18,18 +18,18 @@ class ThermalModel {
     }
 
     /**
-     * Calculates the U-value of a construction element including insulation.
+     * Calculates the U-value of a construction element including insulation layers.
      */
     private function getU($base, $mat, $depth, $etos) {
         $u = $base;
         if ($mat !== 'none' && $depth > 0) {
             $lambda = $this->c['LAMBDA'][$mat]['lambda'] ?? 0;
             if ($lambda > 0) {
-                // R_total = R_base + R_insulation
+                // Formula: 1 / ( (1/U_base) + (Thickness_m / Lambda) )
                 $u = 1 / ((1 / $base) + (($depth / 100) / $lambda));
             }
         }
-        // Apply thermal bridge penalty based on building era
+        // Apply thermal bridge penalty (Psi) based on building era
         return $u + ($this->c['THERMAL_BRIDGES'][$etos] ?? 0.10);
     }
 
@@ -39,10 +39,9 @@ class ThermalModel {
         $height = floatval($p['height'] ?? 0);
         $etos = $p['etos'] ?? 'legacy';
 
-        // Gatekeeper: Should already be handled by Controller, but kept for safety.
         if ($area <= 0 || $height <= 0) return ['btu' => 0, 'kw' => 0];
         
-        // 1. Calculate Delta T (Temperature Difference)
+        // 1. Calculate Delta T (Indoor vs Outdoor)
         $dt = $this->getDeltaT($p, $mode);
 
         // 2. Process Vertical Elements (Walls/Windows)
@@ -53,16 +52,15 @@ class ThermalModel {
         $q_roof = $this->calculateRoofLoad($p, $area, $u_roof, $dt, $mode);
         $floor = $this->calculateFloor($p, $area, $env['perimeter'], $dt, $etos);
         
-        // 4. Infiltration (Air Changes)
+        // 4. Infiltration Load (Air Changes per Hour)
         $ach = ($etos === 'legacy') ? 1.5 : 0.8;
         $q_inf = 0.34 * $ach * ($area * $height) * $dt;
 
-        // 5. Apply Safety Factors (SF)
+        // 5. Final Calculation with Safety Factors
         $sf_cool = floatval($p['m_sf_cool'] ?? 1.10);
         $sf_latent = floatval($p['m_latent'] ?? 1.18);
         $sf_heat = floatval($p['m_sf_heat'] ?? 1.20); 
         
-        // Final Wattage Calculation
         $total_w = ($mode === 'heating') 
             ? ($env['tc'] + $q_roof + $floor['q'] + $q_inf + $env['ts']) * $sf_heat 
             : ($env['tc'] + $q_roof + $floor['q'] + $env['ts'] + $q_inf + ($area * 15)) * $sf_cool * $sf_latent;
@@ -71,7 +69,7 @@ class ThermalModel {
     }
 
     /**
-     * Formats the raw wattage into displayable units and estimates.
+     * Formats raw wattage into report-ready metrics and unit conversions.
      */
     private function formatResults($w, $area, $u_r, $f, $env) {
         return [

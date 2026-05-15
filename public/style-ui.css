@@ -1,0 +1,79 @@
+/**
+ * public/style-ui.css
+ * Component styling: Inputs, Buttons, and UI Interactive States.
+ */
+
+select, input {
+    width: 100%;
+    background: #1c1c1e;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    color: #fff;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    /* Custom SVG Dropdown Arrow */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://w3.org' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Remove arrow icon for standard text/number inputs */
+input { background-image: none; }
+
+/* Compact styling for b-factor and small UI toggles */
+select.small-input {
+    height: 30px !important;
+    padding: 0 25px 0 10px !important;
+    line-height: 1 !important;
+    background-position: right 8px center;
+    background-size: 12px;
+    font-size: 0.65rem;
+    border-radius: 8px;
+}
+
+select:focus, input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent_low);
+}
+
+.btn {
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    width: 100%;
+    font-weight: 900;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: transform 0.1s, filter 0.2s;
+}
+
+/* Tactile feedback on click */
+.btn:active { transform: scale(0.98); }
+.btn:hover { filter: brightness(1.2); }
+
+/* Custom Checkbox Alignment (m2 toggle) */
+input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    margin: 0;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Scrollbar styling for the Technical Terminal */
+textarea::-webkit-scrollbar {
+    width: 8px;
+}
+textarea::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+textarea::-webkit-scrollbar-thumb {
+    background: var(--accent_low);
+    border-radius: 4px;
+}

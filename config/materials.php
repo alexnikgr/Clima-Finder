@@ -1,9 +1,13 @@
 <?php
-if (!defined('APP_RUNNING')) die('Direct access denied.');
-
 /**
- * config/materials.php (V21.0)
+ * config/materials.php
+ * Physical properties, U-values, and thermal constants.
  */
+ if (!defined('APP_RUNNING')) {
+    header("HTTP/1.1 403 Forbidden");
+    exit("Direct access denied.");
+}
+
 return [
     'U_WALL_TYPES' => [
         'single'    => ['label' => 'Μονός (Δρομικός 10cm)', 'u' => 3.20, 'thickness' => 0.10],
@@ -14,7 +18,7 @@ return [
     'U_ROOF_BASE' => [
         'terrace'      => ['legacy' => 3.10, 'medium' => 1.10, 'new' => 0.40],
         'pitched'      => ['legacy' => 2.50, 'medium' => 0.90, 'new' => 0.35],
-        'slab_under'   => ['legacy' => 2.10, 'medium' => 0.85, 'new' => 0.32], // Πλάκα κάτω από στέγη
+        'slab_under'   => ['legacy' => 2.10, 'medium' => 0.85, 'new' => 0.32],
         'heated_above' => ['legacy' => 0.0, 'medium' => 0.0, 'new' => 0.0]
     ],
 
@@ -25,7 +29,6 @@ return [
         'rockwool' => ['label' => 'Πετροβάμβακας', 'lambda' => 0.040]
     ],
 
-    'U_WALL' => ['legacy' => 2.80, 'medium' => 1.20, 'new' => 0.50],
     'U_FLOOR_BASE' => [
         'ground'       => 0.80,
         'pilotis'      => 1.50,

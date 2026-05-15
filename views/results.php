@@ -1,6 +1,6 @@
 <?php
 /**
- * views/results.php (V22.0)
+ * views/results.php (V27.0)
  * Results Dashboard Orchestrator.
  * Handles the high-level layout for displaying the calculation output.
  */
@@ -9,7 +9,7 @@
     exit("Direct access denied.");
 }
 
-// Logic: Determine if we are in Cooling or Heating mode for sub-partial logic
+// Logic: Determine mode for sub-partial coloring and labels
 $isCooling = ($inputs['mode'] ?? 'cooling') === 'cooling';
 ?>
 
@@ -21,20 +21,20 @@ $isCooling = ($inputs['mode'] ?? 'cooling') === 'cooling';
         <div style="flex: 1; min-width: 350px; display: flex; flex-direction: column; justify-content: space-between;">
             
             <div>
-                <!-- Primary BTU/kW Display -->
+                <!-- Primary BTU/kW Display (hero_stats.php) -->
                 <?php include 'views/partials/hero_stats.php'; ?>
                 
-                <!-- Sensitivity Analysis SVG Graph -->
+                <!-- Sensitivity Analysis SVG Graph (results_graph.php) -->
                 <?php include 'views/partials/results_graph.php'; ?>
             </div>
 
-            <!-- Versioning & Engine Stamp -->
+            <!-- Engine Stamp & Versioning -->
             <div style="font-size: 0.6rem; color: var(--label); margin-top: 30px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1px;">
-                <strong>MODEL:</strong> THERMAL PRO V22.0 | <strong>ENGINE:</strong> MVC HYBRID PHYSICS
+                <strong>MODEL:</strong> THERMAL PRO V27.0 | <strong>ENGINE:</strong> MVC HYBRID PHYSICS (M2-STABLE)
             </div>
         </div>
 
-        <!-- RIGHT COLUMN: Detailed Technical Audit -->
+        <!-- RIGHT COLUMN: Detailed Technical Audit Terminal (technical_report.php) -->
         <div style="flex-shrink: 0;">
             <?php include 'views/partials/technical_report.php'; ?>
         </div>
