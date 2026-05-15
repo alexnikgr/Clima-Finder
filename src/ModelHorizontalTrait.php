@@ -1,9 +1,12 @@
 <?php
 /**
- * src/ModelHorizontalTrait.php (V27.0)
- * Logic: ISO 13370 Ground Coupling & Sol-Air Roof Physics.
+ * src/ModelHorizontalTrait.php (V28.0 - Refactored)
+ * Logic: ISO 13370 Ground Coupling & Sol-Air Roof Physics with Era-Differentiated Pilotis lookups.
  */
-if (!defined('APP_RUNNING')) die('Direct access denied.');
+if (!defined('APP_RUNNING')) {
+    header("HTTP/1.1 403 Forbidden");
+    exit("Direct access denied.");
+}
 
 trait ModelHorizontalTrait {
 
@@ -74,8 +77,12 @@ trait ModelHorizontalTrait {
             return ['q' => $area * $u * ($dt * 0.7), 'u' => $u, 'b_prime' => $bp];
         }
 
-        // Pilotis (Open ground floor) behavior: Acts like an external wall
-        $baseU = $this->c['U_FLOOR_BASE']['pilotis'] ?? 1.50;
+        // Pilotis (Open ground floor) behavior: Acts like an external wall exposed to air
+        // Updated lookup to seamlessly fallback between multi-era arrays and traditional single constants
+        $baseU = is_array($this->c['U_FLOOR_BASE']['pilotis']) 
+            ? ($this->c['U_FLOOR_BASE']['pilotis'][$etos] ?? 1.50)
+            : ($this->c['U_FLOOR_BASE']['pilotis'] ?? 1.50);
+            
         $u = $this->getU($baseU, $p['floor_ins'] ?? 'none', floatval($p['floor_ins_depth'] ?? 0), $etos);
         return ['q' => $area * $u * $dt, 'u' => $u, 'b_prime' => 0];
     }
