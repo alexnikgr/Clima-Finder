@@ -18,7 +18,7 @@ $themeLow   = $isCooling ? 'rgba(10, 132, 255, 0.15)' : 'rgba(255, 149, 0, 0.15)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thermal Pro MVC | V27.0</title>
+    <title>ClimaFinder | V0.7</title>
     
     <!-- CSS Assets -->
 	<link rel="stylesheet" href="public/style-base.css">
@@ -39,7 +39,7 @@ $themeLow   = $isCooling ? 'rgba(10, 132, 255, 0.15)' : 'rgba(255, 149, 0, 0.15)
         <!-- HEADER / BRANDING -->
         <header style="grid-column: span 12; display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
             <div style="font-weight: 900; letter-spacing: -1px; font-size: 1.2rem;">
-                <a style="all: unset; cursor: pointer;" href="index.php">THERMAL<span style="color: var(--accent)">PRO</span> <span style="opacity: 0.3; font-weight: 400;">MVC</span></a>
+                <a style="all: unset; cursor: pointer;" href="index.php">CLIMA<span style="color: var(--accent)">FINDER</span> <span style="opacity: 0.3; font-weight: 400;">v0.7</span></a>
             </div>
             <div style="font-size: 0.65rem; color: var(--label); font-weight: 800; text-transform: uppercase;">
                 Κατάσταση: <?= $isCooling ? 'Σύστημα Ψύξης' : 'Σύστημα Θέρμανσης' ?>
