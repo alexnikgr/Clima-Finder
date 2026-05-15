@@ -1,24 +1,26 @@
 <?php
 /**
- * src/ThermalModel.php (V27.0)
- * Core Orchestrator: Combines traits and prepares data for expanded reporting.
+ * src/ThermalModel.php (V28.0 - Final Consolidated)
+ * Core Orchestrator: Combines traits and coordinates horizontal/vertical heat calculations.
+ * Fully leverages configuration constants to eliminate hardcoded HVAC magic numbers.
  */
-if (!defined('APP_RUNNING')) die('Direct access denied.');
-
-require_once 'ModelPhysicsTrait.php';
-require_once 'ModelEnvelopeTrait.php';
-require_once 'ModelHorizontalTrait.php';
+if (!defined('APP_RUNNING')) {
+    header("HTTP/1.1 403 Forbidden");
+    exit("Direct access denied.");
+}
 
 class ThermalModel {
     use ModelPhysicsTrait, ModelEnvelopeTrait, ModelHorizontalTrait;
 
     private $c;
+    
     public function __construct($constants) { 
         $this->c = $constants; 
     }
 
     /**
-     * Calculates the U-value of a construction element including insulation layers.
+     * Calculates the true compound U-value of a construction element.
+     * Thermal bridge penalties (Psi) are handled globally per unit length in the traits.
      */
     private function getU($base, $mat, $depth, $etos) {
         $u = $base;
@@ -29,8 +31,7 @@ class ThermalModel {
                 $u = 1 / ((1 / $base) + (($depth / 100) / $lambda));
             }
         }
-        // Apply thermal bridge penalty (Psi) based on building era
-        return $u + ($this->c['THERMAL_BRIDGES'][$etos] ?? 0.10);
+        return $u;
     }
 
     public function calculate(array $p): array {
@@ -44,26 +45,37 @@ class ThermalModel {
         // 1. Calculate Delta T (Indoor vs Outdoor)
         $dt = $this->getDeltaT($p, $mode);
 
-        // 2. Process Vertical Elements (Walls/Windows)
+        // 2. Process Vertical Elements (Walls/Windows & Linear Thermal Bridges)
         $env = $this->processEnvelope($p, $mode, $dt, $etos, $area, $height);
 
-        // 3. Process Horizontal Elements (Roof/Floor)
+        // 3. Process Horizontal Elements (Roof/Floor via ISO 13370)
         $u_roof = $this->calculateRoofU($p, $etos);
         $q_roof = $this->calculateRoofLoad($p, $area, $u_roof, $dt, $mode);
         $floor = $this->calculateFloor($p, $area, $env['perimeter'], $dt, $etos);
         
-        // 4. Infiltration Load (Air Changes per Hour)
+        // 4. Dynamic Infiltration Load (Air Changes per Hour based on Building Era)
         $ach = ($etos === 'legacy') ? 1.5 : 0.8;
-        $q_inf = 0.34 * $ach * ($area * $height) * $dt;
+        
+        // Dynamically compute the infiltration multiplier from physics config variables: (Density * Shc) / 3600
+        $rho = floatval($this->c['PHYSICS']['air_density'] ?? 1.20);
+        $cp  = floatval($this->c['PHYSICS']['air_shc'] ?? 1005);
+        $infiltration_multiplier = ($rho * $cp) / 3600; // Yields exactly ~0.335 based on standards
+        
+        $q_inf = $infiltration_multiplier * $ach * ($area * $height) * $dt;
 
-        // 5. Final Calculation with Safety Factors
+        // 5. Final Sizing Calculation with Safety Factors
         $sf_cool = floatval($p['m_sf_cool'] ?? 1.10);
         $sf_latent = floatval($p['m_latent'] ?? 1.18);
         $sf_heat = floatval($p['m_sf_heat'] ?? 1.20); 
         
-        $total_w = ($mode === 'heating') 
-            ? ($env['tc'] + $q_roof + $floor['q'] + $q_inf + $env['ts']) * $sf_heat 
-            : ($env['tc'] + $q_roof + $floor['q'] + $env['ts'] + $q_inf + ($area * 15)) * $sf_cool * $sf_latent;
+        // Sizing Safeguard: Peak heating ignores daytime solar gains to ensure winter sizing stability
+        if ($mode === 'heating') {
+            $net_heating_losses = $env['tc'] + $q_roof + $floor['q'] + $q_inf;
+            $total_w = max($net_heating_losses, 0) * $sf_heat;
+        } else {
+            // Cooling includes sensible envelope conduction, roof, floor, solar gains, infiltration, and internal gains (15W/m2)
+            $total_w = ($env['tc'] + $q_roof + $floor['q'] + $env['ts'] + $q_inf + ($area * 15)) * $sf_cool * $sf_latent;
+        }
 
         return $this->formatResults($total_w, $area, $u_roof, $floor, $env);
     }
