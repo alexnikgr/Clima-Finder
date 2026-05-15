@@ -1,9 +1,12 @@
 <?php
 /**
- * src/ModelPhysicsTrait.php (V27.0)
+ * src/ModelPhysicsTrait.php (V28.0 - Refactored)
  * Mathematical Foundation: Temperature Differentials & Transient Heat Flow (Lag).
  */
-if (!defined('APP_RUNNING')) die('Direct access denied.');
+if (!defined('APP_RUNNING')) {
+    header("HTTP/1.1 403 Forbidden");
+    exit("Direct access denied.");
+}
 
 trait ModelPhysicsTrait {
 
@@ -31,19 +34,21 @@ trait ModelPhysicsTrait {
         $L_wall = $this->c['U_WALL_TYPES'][$build_type]['thickness'] ?? 0.25;
         $wall_props = $this->c['THERMAL_PROPS'][$etos] ?? $this->c['THERMAL_PROPS']['legacy'];
         
-        // Inverse calculate conductivity (k) from U-value for lag precision
+        // Correct engineering calculation of material resistance factoring boundary film resistance (Rse + Rsi ~ 0.17)
         $baseU = $this->c['U_WALL_TYPES'][$build_type]['u'] ?? 1.80;
-        $k_wall = ($baseU - ($this->c['THERMAL_BRIDGES'][$etos] ?? 0.1)) * $L_wall;
+        $R_wall_material = max((1 / $baseU) - 0.17, 0.05); // Prevent negative numbers
+        $k_wall = $L_wall / $R_wall_material;
         
         // 2. Additional Insulation Geometry
         $ins_mat = $p["ins_mat_$dir"] ?? 'none';
         $L_ins = floatval($p["ins_depth_$dir"] ?? 0) / 100; // cm to m
         
         // 3. Composite Thermal Circuit (R and C)
-        $R_total = ($k_wall > 0) ? ($L_wall / $k_wall) : 0.1;
+        $R_total = $R_wall_material;
         $C_total = ($L_wall * $wall_props['density'] * $wall_props['cp']);
 
-        if ($ins_mat !== 'none') {
+        // Check against missing configuration keys to prevent fatal crashes
+        if ($ins_mat !== 'none' && isset($this->c['THERMAL_PROPS'][$ins_mat])) {
             $ins_props = $this->c['THERMAL_PROPS'][$ins_mat];
             $k_ins = $this->c['LAMBDA'][$ins_mat]['lambda'] ?? 0.035;
             
