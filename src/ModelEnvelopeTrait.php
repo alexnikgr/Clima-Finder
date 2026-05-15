@@ -1,7 +1,7 @@
 <?php
 /**
- * src/ModelEnvelopeTrait.php (V28.0 - Refactored)
- * Logic: Precise area calculation for Custom m2 vs. Unit counting and linear thermal bridge scaling.
+ * src/ModelEnvelopeTrait.php (V0.7 - Shading Upgrade)
+ * Logic: Precise area calculation for Custom m2 vs. Unit counting and orientation-weighted solar tracking.
  */
 if (!defined('APP_RUNNING')) {
     header("HTTP/1.1 403 Forbidden");
@@ -60,7 +60,7 @@ trait ModelEnvelopeTrait {
                 
                 $tc += ($awin * $u_win_total * $adj_dt);
                 
-                // 6. Calculate Solar Heat Gains
+                // 6. Calculate Solar Heat Gains (Now dynamically weighted by orientation)
                 $ts += $this->calculateShading($p, $dir, $awin, $mode);
             }
         }
@@ -76,15 +76,24 @@ trait ModelEnvelopeTrait {
         ];
     }
 
+    /**
+     * Dynamically handles multi-directional solar irradiance entries.
+     */
     private function calculateShading($p, $dir, $awin, $mode) {
         $sid = $p["shading_$dir"] ?? 'none';
         $sf = $this->c['SHADING_OPTIONS'][$sid]['factor'] ?? 1.0;
         $g = $this->c['TZAMI'][$p["glass_$dir"] ?? 'double']['g'] ?? 0.7;
 
-        // Cooling: Solar intensity ~700W/m2 | Heating: Gain ~250W/m2
-        if ($mode === 'cooling') return $awin * $g * 0.8 * $sf * 700;
+        // Fetch dynamic, orientation-weighted solar radiation intensity matrix properties
+        $base_radiation = $this->c['SOLAR_IRRADIANCE'][$mode][$dir] ?? ($mode === 'cooling' ? 700 : 250);
+
+        // Cooling: Solar radiation loads adjusted dynamically by direction (North vs East/West)
+        if ($mode === 'cooling') {
+            return $awin * $g * 0.8 * $sf * $base_radiation;
+        }
         
+        // Heating: Capture bioclimatic transient behavior for retractable shading setups
         $is_ret = in_array($sid, ['shutter', 'awning', 'trees_dec', 'louvers_bio']);
-        return -($awin * $g * 0.8 * ($is_ret ? 0.9 : $sf) * 250);
+        return -($awin * $g * 0.8 * ($is_ret ? 0.9 : $sf) * $base_radiation);
     }
 }
