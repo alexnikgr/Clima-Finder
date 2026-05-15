@@ -1,7 +1,7 @@
 <?php
 /**
- * views/partials/hero_stats.php (V27.0)
- * Logic: Primary result display and auto-geometry notification.
+ * views/partials/hero_stats.php (V28.0 - Refactored)
+ * Logic: Primary result display, safety factors text summary alignment, and auto-geometry notification.
  */
  if (!defined('APP_RUNNING')) {
     header("HTTP/1.1 403 Forbidden");
@@ -42,5 +42,11 @@
 </div>
 
 <p style="font-size: 0.65rem; color: var(--label); margin-top: 10px; max-width: 400px; line-height: 1.4;">
-    * Το φορτίο περιλαμβάνει προσαυξήσεις ασφαλείας (Sensible: <?= $inputs['m_sf_cool'] ?? '1.10' ?><?= $isCooling ? " / Latent: " . ($inputs['m_latent'] ?? '1.18') : "" ?>).
+    * Το φορτίο περιλαμβάνει προσαυξήσεις ασφαλείας (
+    <?php if ($isCooling): ?>
+        Sensible: <?= htmlspecialchars($inputs['m_sf_cool'] ?? '1.10') ?> / Latent: <?= htmlspecialchars($inputs['m_latent'] ?? '1.18') ?>
+    <?php else: ?>
+        Heating: <?= htmlspecialchars($inputs['m_sf_heat'] ?? '1.20') ?>
+    <?php endif; ?>
+    ).
 </p>
