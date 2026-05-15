@@ -1,9 +1,12 @@
 <?php
 /**
- * src/ModelEnvelopeTrait.php (V27.0)
- * Logic: Precise area calculation for Custom m2 vs. Unit counting.
+ * src/ModelEnvelopeTrait.php (V28.0 - Refactored)
+ * Logic: Precise area calculation for Custom m2 vs. Unit counting and linear thermal bridge scaling.
  */
-if (!defined('APP_RUNNING')) die('Direct access denied.');
+if (!defined('APP_RUNNING')) {
+    header("HTTP/1.1 403 Forbidden");
+    exit("Direct access denied.");
+}
 
 trait ModelEnvelopeTrait {
     private function processEnvelope($p, $mode, $dt, $etos, $area, $height) {
@@ -30,7 +33,7 @@ trait ModelEnvelopeTrait {
             $f_adj = $this->c['ADJACENT_FACTORS'][$env_type]['f'] ?? 1.0;
             $adj_dt = $dt * $f_adj;
 
-            // 3. THE m2 CORRECTION LOGIC
+            // 3. The m2 Correction Logic
             $is_custom = (($p["win_custom_$dir"] ?? 'no') === 'yes');
             if ($is_custom) {
                 // Sum inputs directly as m2
@@ -45,6 +48,10 @@ trait ModelEnvelopeTrait {
             $net_wall_area = max($gross_wall_area - $awin, 0);
             $tc += ($net_wall_area * $u_w * $adj_dt);
 
+            // 5. Integrate True Linear Thermal Bridge Penalty (Psi) over Wall Perimeter Length
+            $psi_penalty = $this->c['THERMAL_BRIDGES'][$etos] ?? 0.20;
+            $tc += ($len * $psi_penalty * $adj_dt);
+
             if ($awin > 0) {
                 // Composite U-Value for Windows (Frame + Glass)
                 $u_frame = $this->c['KOUFOMATA'][$p["frame_$dir"] ?? 'alum']['u'] ?? 3.0;
@@ -53,7 +60,7 @@ trait ModelEnvelopeTrait {
                 
                 $tc += ($awin * $u_win_total * $adj_dt);
                 
-                // 5. Calculate Solar Heat Gains
+                // 6. Calculate Solar Heat Gains
                 $ts += $this->calculateShading($p, $dir, $awin, $mode);
             }
         }
